@@ -1,9 +1,8 @@
-name: simple ci workflow
+name: simple ci workflows
 on:
   push:
     branches:
       - main
-
 jobs:
   mytestbuild:
     runs-on: ubuntu-latest
