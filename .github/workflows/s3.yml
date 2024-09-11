@@ -46,4 +46,4 @@ jobs:
     - name: Sync to S3
       run: |
         # Sync only updated files to S3
-        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude "*" --include "*.your-file-extension"
+        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude "*" 
