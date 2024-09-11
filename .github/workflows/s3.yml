@@ -20,6 +20,44 @@
 #     - name: s3 deploy
 #       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
       
+# name: S3 Sync
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   sync:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v3
+
+#     - name: Configure AWS CLI
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: us-east-1
+
+#     - name: List files to sync
+#       run: |
+#         echo "Listing files to sync..."
+#         ls -R
+
+#     - name: Sync to S3
+#       run: |
+#         echo "Starting sync..."
+#         aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps      
+#         echo "Sync completed."
+
+#     - name: List S3 bucket contents
+#       run: |
+#         echo "Listing S3 bucket contents..."
+#         aws s3 ls s3://nisheshtest/ --recursive
+
 name: S3 Sync
 
 on:
@@ -45,16 +83,15 @@ jobs:
     - name: List files to sync
       run: |
         echo "Listing files to sync..."
-        ls -R
+        find . -type f
 
     - name: Sync to S3
       run: |
         echo "Starting sync..."
-        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps      
+        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude ".git/*" --exclude "node_modules/*" --exclude "README.md"
         echo "Sync completed."
 
     - name: List S3 bucket contents
       run: |
         echo "Listing S3 bucket contents..."
         aws s3 ls s3://nisheshtest/ --recursive
-
