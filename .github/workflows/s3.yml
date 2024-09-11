@@ -129,20 +129,27 @@ jobs:
     - name: Compare and upload changed files
       run: |
         echo "Comparing and uploading changed files..."
-        while read -r file; do
-          # Normalize file path
-          local_file="$file"
-          s3_file="$file"
+        while IFS= read -r local_file; do
+          # Ensure the local file path is normalized
+          local_file_path="./$local_file"
 
-          # Check if local file is newer than S3 file
+          # Get local file modification time
           local_mtime=$(grep "$local_file" local_files.txt | awk '{print $1}')
-          s3_mtime=$(aws s3api head-object --bucket nisheshtest --key "$s3_file" 2>/dev/null | jq -r '.LastModified' | xargs -I{} date -d {} +%s || echo 0)
 
+          # Get S3 file modification time
+          s3_mtime=$(aws s3api head-object --bucket nisheshtest --key "$local_file" 2>/dev/null | jq -r '.LastModified' | xargs -I{} date -d {} +%s || echo 0)
+
+          # Compare times and upload if local file is newer
           if [[ "$local_mtime" -gt "$s3_mtime" ]]; then
             echo "Uploading changed file: $local_file"
-            aws s3 cp "$local_file" s3://nisheshtest/"$s3_file" --acl public-read
+            aws s3 cp "$local_file_path" s3://nisheshtest/"$local_file" --acl public-read
           fi
         done < local_files.txt
+
+    - name: Clean up
+      run: |
+        rm local_files.txt s3_files.txt
+
 
     - name: Clean up
       run: |
