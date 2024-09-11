@@ -1,30 +1,8 @@
-# name: s3
-# on:
-#   push:
-#     branches:
-#     -  main
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v1
-
-#     - name: AWS
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with: 
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: s3 deploy
-#       run: aws s3 cp . s3://nisheshtest/ --recursive   
-
 name: s3
 on:
   push:
     branches:
-      - main
+    -  main
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -40,13 +18,9 @@ jobs:
         aws-region: us-east-1
 
     - name: s3 deploy
-      run: aws s3 cp . s3://nisheshs/ --recursive
+      run: aws s3 cp . s3://nisheshtest/ --recursive   
 
-    - name: Notify SNS
-      run: |
-        aws sns publish \
-          --topic-arn arn:aws:sns:us-east-1:782359039998:notificationtopic \
-          --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshs/."
+
 
 
     
