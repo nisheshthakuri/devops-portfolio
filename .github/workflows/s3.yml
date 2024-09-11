@@ -20,34 +20,6 @@
 #     - name: s3 deploy
 #       run: aws s3 cp . s3://nisheshtest/ --recursive   
 
-# name: s3
-# on:
-#   push:
-#     branches:
-#       - main
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v1
-
-#     - name: AWS
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with: 
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: s3 deploy
-#       run: aws s3 cp . s3://nisheshs/ --recursive
-
-#     - name: Notify SNS
-#       run: |
-#         aws sns publish \
-#           --topic-arn arn:aws:sns:us-east-1:782359039998:notificationtopic \
-#           --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshtest/."
-
 name: s3
 on:
   push:
@@ -60,42 +32,22 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
-    - name: Configure AWS
+    - name: AWS
       uses: aws-actions/configure-aws-credentials@v1
       with: 
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: List files to deploy
-      run: |
-        find . -type f > files-to-upload.txt
-
-    - name: Deploy to S3
-      id: deploy
-      run: |
-        aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
-        aws s3 ls s3://nisheshs/ --recursive > s3-files-list.txt
-      continue-on-error: true
-
-    - name: Prepare SNS message
-      id: prepare-sns-message
-      run: |
-        if [ $? -eq 0 ]; then
-          # Deployment succeeded
-          UPDATED_FILES=$(cat files-to-upload.txt)
-          UPLOADED_FILES=$(aws s3 ls s3://nisheshs/ --recursive --human-readable)
-          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshs/:\n$UPLOADED_FILES"
-        else
-          # Deployment failed
-          MESSAGE="Deployment failed. Please check the logs for details."
-        fi
-        echo -e "$MESSAGE" > sns-message.txt
+    - name: s3 deploy
+      run: aws s3 cp . s3://nisheshs/ --recursive
 
     - name: Notify SNS
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:782359039998:notificationtopic \
-          --message file://sns-message.txt
+          --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshs/."
+
+
     
    
