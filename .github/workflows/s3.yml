@@ -118,39 +118,8 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: List local files with modification times
+    - name: Sync updated files to S3
       run: |
-        find . -type f -not -path '*/\.git/*' -not -path '*/node_modules/*' -exec stat --format='%Y %n' {} \; | sed 's|^\./||' > local_files.txt
+        # Sync files with size comparison only
+        aws s3 sync . s3://nisheshtest/ --size-only --delete 
 
-    - name: List S3 files and their modification times
-      run: |
-        aws s3 ls s3://nisheshtest/ --recursive | awk '{print $4}' > s3_files.txt
-
-    - name: Compare and upload changed files
-      run: |
-        echo "Comparing and uploading changed files..."
-        while IFS= read -r local_file; do
-          # Ensure the local file path is normalized
-          local_file_path="./$local_file"
-
-          # Get local file modification time
-          local_mtime=$(grep "$local_file" local_files.txt | awk '{print $1}')
-
-          # Get S3 file modification time
-          s3_mtime=$(aws s3api head-object --bucket nisheshtest --key "$local_file" 2>/dev/null | jq -r '.LastModified' | xargs -I{} date -d {} +%s || echo 0)
-
-          # Compare times and upload if local file is newer
-          if [[ "$local_mtime" -gt "$s3_mtime" ]]; then
-            echo "Uploading changed file: $local_file"
-            aws s3 cp "$local_file_path" s3://nisheshtest/"$local_file" --acl public-read
-          fi
-        done < local_files.txt
-
-    - name: Clean up
-      run: |
-        rm local_files.txt s3_files.txt
-
-
-    - name: Clean up
-      run: |
-        rm local_files.txt s3_files.txt
