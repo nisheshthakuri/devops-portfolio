@@ -1,23 +1,49 @@
-name: s3
+# name: s3
+# on:
+#   push:
+#     branches:
+#     -  main
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v1
+
+#     - name: AWS
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with: 
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: us-east-1
+
+#     - name: s3 deploy
+#       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
+      
+
+name: S3 Sync
+
 on:
   push:
     branches:
-    -  main
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - main
 
-    - name: AWS
-      uses: aws-actions/configure-aws-credentials@v1
-      with: 
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: s3 deploy
-      run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
-      
-
+    - name: Sync to S3
+      run: |
+        # Sync only updated files to S3
+        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude "*" --include "*.your-file-extension"
