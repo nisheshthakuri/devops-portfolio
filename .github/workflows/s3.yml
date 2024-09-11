@@ -20,7 +20,6 @@
 #     - name: s3 deploy
 #       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
       
-
 name: s3
 on:
   push:
@@ -53,13 +52,15 @@ jobs:
 
     - name: Upload changed files to S3
       run: |
-        # Check if the file list is empty
+        # Ensure the file list is not empty
         if [ -s changed-files.txt ]; then
           echo "Uploading changed files to S3..."
           while IFS= read -r file; do
             if [ -f "$file" ]; then
               echo "Uploading $file to s3://nisheshtest/$file"
-              aws s3 sync "$file" s3://nisheshtest/"$file" --delete 
+              # Remove leading './' if present
+              file_path="${file#./}"
+              aws s3 cp "$file" s3://nisheshtest/"$file_path" --delete --exact-timestamps
             else
               echo "$file does not exist, skipping."
             fi
