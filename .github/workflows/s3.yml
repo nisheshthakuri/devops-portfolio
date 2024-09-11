@@ -83,7 +83,7 @@ jobs:
     - name: List local files with timestamps
       run: |
         echo "Listing local files with timestamps..."
-        find ./build -type f -exec stat --format='%Y %n' {} \;
+        find . -type f -exec stat --format='%Y %n' {} \;
 
     - name: Sync build directory to S3
       run: |
