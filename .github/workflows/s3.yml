@@ -1,125 +1,22 @@
-# name: s3
-# on:
-#   push:
-#     branches:
-#     -  main
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v1
-
-#     - name: AWS
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with: 
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: s3 deploy
-#       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
-      
-# name: S3 Sync
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   sync:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v3
-
-#     - name: Configure AWS CLI
-#       uses: aws-actions/configure-aws-credentials@v2
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: List files to sync
-#       run: |
-#         echo "Listing files to sync..."
-#         ls -R
-
-#     - name: Sync to S3
-#       run: |
-#         echo "Starting sync..."
-#         aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps      
-#         echo "Sync completed."
-
-#     - name: List S3 bucket contents
-#       run: |
-#         echo "Listing S3 bucket contents..."
-#         aws s3 ls s3://nisheshtest/ --recursive
-
-# name: S3 Sync
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   sync:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v3
-
-#     - name: Configure AWS CLI
-#       uses: aws-actions/configure-aws-credentials@v2
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: List local files with timestamps
-#       run: |
-#         echo "Listing local files with timestamps..."
-#         find . -type f -exec stat --format='%Y %n' {} \;
-
-#     - name: Sync build directory to S3
-#       run: |
-#         echo "Starting sync..."
-#         aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
-#         echo "Sync completed."
-
-#     - name: List S3 bucket contents
-#       run: |
-#         echo "Listing S3 bucket contents..."
-#         aws s3 ls s3://nisheshtest/ --recursive
-
-name: S3 Sync
-
+name: s3
 on:
   push:
     branches:
-      - main
-
+    -  main
 jobs:
-  sync:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v1
 
-    - name: Configure AWS CLI
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
+    - name: AWS
+      uses: aws-actions/configure-aws-credentials@v1
+      with: 
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Sync updated files to S3
-      run: |
-        # Sync files with size comparison only
-        aws s3 sync . s3://nisheshtest/ --size-only --delete 
-
+    - name: s3 deploy
+      run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
+      
