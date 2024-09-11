@@ -60,7 +60,7 @@ jobs:
               echo "Uploading $file to s3://nisheshtest/$file"
               # Remove leading './' if present
               file_path="${file#./}"
-              aws s3 cp "$file" s3://nisheshtest/"$file_path" --delete
+              aws s3 sync "$file" s3://nisheshtest/"$file_path" --delete
             else
               echo "$file does not exist, skipping."
             fi
