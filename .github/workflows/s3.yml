@@ -74,7 +74,7 @@ jobs:
     - name: Deploy to S3
       id: deploy
       run: |
-        aws s3 sync . s3://nisheshs/ --delete
+        aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
         aws s3 ls s3://nisheshs/ --recursive > s3-files-list.txt
       continue-on-error: true
 
