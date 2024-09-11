@@ -1,11 +1,36 @@
+# name: s3
+# on:
+#   push:
+#     branches:
+#     -  main
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v1
+
+#     - name: AWS
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with: 
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: us-east-1
+
+#     - name: s3 deploy
+#       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
+      
+
 name: s3
 on:
   push:
     branches:
-    -  main
+      - main
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout
       uses: actions/checkout@v1
@@ -17,7 +42,21 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: s3 deploy
-      run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
-      
+    - name: Get changed files
+      id: get-changed-files
+      run: |
+        # Get the list of changed files in the last commit
+        git diff-tree --no-commit-id --name-only -r HEAD > changed-files.txt
+        # Output the list of changed files for later steps
+        echo "Changed files:"
+        cat changed-files.txt
 
+    - name: Upload changed files to S3
+      if: success() && steps.get-changed-files.outputs.files != ''
+      run: |
+        while IFS= read -r file; do
+          if [[ -f "$file" ]]; then
+            echo "Uploading $file"
+            aws s3 cp "$file" s3://nisheshtest/"$file"
+          fi
+        done < changed-files.txt
