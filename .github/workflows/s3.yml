@@ -120,7 +120,7 @@ jobs:
 
     - name: List local files with modification times
       run: |
-        find . -type f -not -path '*/\.git/*' -not -path '*/node_modules/*' -exec stat --format='%Y %n' {} \; > local_files.txt
+        find . -type f -not -path '*/\.git/*' -not -path '*/node_modules/*' -exec stat --format='%Y %n' {} \; | sed 's|^\./||' > local_files.txt
 
     - name: List S3 files and their modification times
       run: |
@@ -132,7 +132,7 @@ jobs:
         while read -r file; do
           # Normalize file path
           local_file="$file"
-          s3_file=$(echo "$file" | sed 's/^\.\///')
+          s3_file="$file"
 
           # Check if local file is newer than S3 file
           local_mtime=$(grep "$local_file" local_files.txt | awk '{print $1}')
