@@ -59,7 +59,7 @@ jobs:
           while IFS= read -r file; do
             if [ -f "$file" ]; then
               echo "Uploading $file to s3://nisheshtest/$file"
-              aws s3 cp "$file" s3://nisheshtest/"$file" --acl public-read
+              aws s3 sync "$file" s3://nisheshtest/"$file" --delete 
             else
               echo "$file does not exist, skipping."
             fi
