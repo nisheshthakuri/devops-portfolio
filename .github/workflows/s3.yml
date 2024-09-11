@@ -88,7 +88,7 @@ jobs:
     - name: Sync build directory to S3
       run: |
         echo "Starting sync..."
-        aws s3 sync ./build s3://nisheshtest/ --delete --exact-timestamps
+        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
         echo "Sync completed."
 
     - name: List S3 bucket contents
