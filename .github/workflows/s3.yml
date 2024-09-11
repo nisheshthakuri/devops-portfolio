@@ -1,30 +1,8 @@
-# name: s3
-# on:
-#   push:
-#     branches:
-#     -  main
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v1
-
-#     - name: AWS
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with: 
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-east-1
-
-#     - name: s3 deploy
-#       run: aws s3 cp . s3://nisheshtest/ --recursive
-      
 name: s3
 on:
   push:
     branches:
-    - main
+    -  main
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -40,16 +18,6 @@ jobs:
         aws-region: us-east-1
 
     - name: s3 deploy
-      id: deploy
-      run: |
-        aws s3 sync . s3://nisheshtest/ --delete
+      run: aws s3 sync . s3://nisheshtest/ --recursive
+      
 
-    - name: Notify on success
-      if: success()
-      run: |
-        echo "Deployment successful" | mail -s "S3 Deployment Success" nisheshthakuri.np@gmail.com
-
-    - name: Notify on failure
-      if: failure()
-      run: |
-        echo "Deployment failed" | mail -s "S3 Deployment Failure" nisheshthakuri.np@gmail.com
