@@ -47,16 +47,23 @@ jobs:
       run: |
         # Get the list of changed files in the last commit
         git diff-tree --no-commit-id --name-only -r HEAD > changed-files.txt
-        # Output the list of changed files for later steps
+        # Output the list of changed files
         echo "Changed files:"
         cat changed-files.txt
 
     - name: Upload changed files to S3
-      if: success() && steps.get-changed-files.outputs.files != ''
       run: |
-        while IFS= read -r file; do
-          if [[ -f "$file" ]]; then
-            echo "Uploading $file"
-            aws s3 cp "$file" s3://nisheshtest/"$file"
-          fi
-        done < changed-files.txt
+        # Check if the file list is empty
+        if [ -s changed-files.txt ]; then
+          echo "Uploading changed files to S3..."
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file to s3://nisheshtest/$file"
+              aws s3 cp "$file" s3://nisheshtest/"$file" --acl public-read
+            else
+              echo "$file does not exist, skipping."
+            fi
+          done < changed-files.txt
+        else
+          echo "No changed files to upload."
+        fi
