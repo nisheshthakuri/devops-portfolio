@@ -74,8 +74,8 @@ jobs:
     - name: Deploy to S3
       id: deploy
       run: |
-        aws s3 sync . s3://nisheshtest/ --delete
-        aws s3 ls s3://nisheshtest/ --recursive > s3-files-list.txt
+        aws s3 sync . s3://nisheshs/ --delete
+        aws s3 ls s3://nisheshs/ --recursive > s3-files-list.txt
       continue-on-error: true
 
     - name: Prepare SNS message
@@ -84,8 +84,8 @@ jobs:
         if [ $? -eq 0 ]; then
           # Deployment succeeded
           UPDATED_FILES=$(cat files-to-upload.txt)
-          UPLOADED_FILES=$(aws s3 ls s3://nisheshtest/ --recursive --human-readable)
-          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshtest/:\n$UPLOADED_FILES"
+          UPLOADED_FILES=$(aws s3 ls s3://nisheshs/ --recursive --human-readable)
+          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshs/:\n$UPLOADED_FILES"
         else
           # Deployment failed
           MESSAGE="Deployment failed. Please check the logs for details."
