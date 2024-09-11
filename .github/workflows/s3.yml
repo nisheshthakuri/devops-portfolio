@@ -80,15 +80,15 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: List files to sync
+    - name: List local files with timestamps
       run: |
-        echo "Listing files to sync..."
-        find . -type f
+        echo "Listing local files with timestamps..."
+        find ./build -type f -exec stat --format='%Y %n' {} \;
 
-    - name: Sync to S3
+    - name: Sync build directory to S3
       run: |
         echo "Starting sync..."
-        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude ".git/*" --exclude "node_modules/*" --exclude "README.md"
+        aws s3 sync ./build s3://nisheshtest/ --delete --exact-timestamps
         echo "Sync completed."
 
     - name: List S3 bucket contents
