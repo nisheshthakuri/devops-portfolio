@@ -40,12 +40,12 @@ jobs:
         aws-region: us-east-1
 
     - name: s3 deploy
-      run: aws s3 cp . s3://nisheshtest/ --recursive
+      run: aws s3 cp . s3://nisheshs/ --recursive
 
     - name: Notify SNS
       run: |
         aws sns publish \
-          --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic:fcb98b3b-196d-435f-b728-97b99ed8351 \
+          --topic-arn arn:aws:sns:us-east-1:782359039998:notificationtopic \
           --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshtest/."
       # env:
       #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
