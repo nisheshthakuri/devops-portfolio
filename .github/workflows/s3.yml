@@ -20,7 +20,6 @@
 #     - name: s3 deploy
 #       run: aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps
       
-
 name: S3 Sync
 
 on:
@@ -43,7 +42,19 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+    - name: List files to sync
+      run: |
+        echo "Listing files to sync..."
+        ls -R
+
     - name: Sync to S3
       run: |
-        # Sync only updated files to S3
-        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps --exclude "*" 
+        echo "Starting sync..."
+        aws s3 sync . s3://nisheshtest/ --delete --exact-timestamps      
+        echo "Sync completed."
+
+    - name: List S3 bucket contents
+      run: |
+        echo "Listing S3 bucket contents..."
+        aws s3 ls s3://nisheshtest/ --recursive
+
