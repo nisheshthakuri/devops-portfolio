@@ -10,8 +10,8 @@ pipeline {
         stage('Print Test Message') {
             steps {
                 script {
-                    // echo "hello from ${env.BUILD_USER}"
-                    echo "hello from $GITHUB_ACTOR!"
+                    echo "hello from ${env.BUILD_USER}"
+
                 }
             }
         }
