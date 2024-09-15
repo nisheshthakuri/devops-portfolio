@@ -43,8 +43,8 @@ jobs:
     - name: Configure AWS
       uses: aws-actions/configure-aws-credentials@v2
       with:
-        # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: List files to deploy
@@ -53,8 +53,8 @@ jobs:
     - name: Deploy to S3
       id: deploy
       run: |
-        aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
-        aws s3 ls s3://nisheshs/ --recursive > s3-files-list.txt
+        aws s3 sync . s3://nisheshsd/ --delete --exclude ".*"
+        aws s3 ls s3://nisheshsd/ --recursive > s3-files-list.txt
 
     - name: Prepare SNS message
       id: prepare-sns-message
@@ -62,8 +62,8 @@ jobs:
         if [ $? -eq 0 ]; then
           # Deployment succeeded
           UPDATED_FILES=$(cat files-to-upload.txt)
-          UPLOADED_FILES=$(aws s3 ls s3://nisheshs/ --recursive --human-readable)
-          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshs/:\n$UPLOADED_FILES"
+          UPLOADED_FILES=$(aws s3 ls s3://nisheshsd/ --recursive --human-readable)
+          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshsd/:\n$UPLOADED_FILES"
         else
           # Deployment failed
           MESSAGE="Deployment failed. Please check the logs for details."
