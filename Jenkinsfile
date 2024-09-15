@@ -6,7 +6,7 @@ pipeline {
         stage('Print Test Message') {
             steps {
                 script {
-                    echo "hello from nishesh"
+                    echo "hello from nishesh dwc"
 
                 }
             }
