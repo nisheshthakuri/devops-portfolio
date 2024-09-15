@@ -18,7 +18,7 @@ jobs:
         aws-region: ${{ secrets.AWS_S3_REGION }}
 
     - name: s3 deploy
-      run: aws s3 cp . s3://nisheshs/ --recursive   
+      run: aws s3 sync . s3://nisheshs/ --size-only
 
 
 
