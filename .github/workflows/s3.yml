@@ -36,7 +36,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    - name: Checkout Code
       uses: actions/checkout@v3
 
     - name: Configure AWS
@@ -46,13 +46,14 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: List files to deploy
-      run: find . -type f -not -path "./.git/*" > files-to-upload.txt
+    - name: List Files to Deploy
+      run: find . -type f -not -path "./.git/*" -not -name ".*" > files-to-upload.txt
 
     - name: Deploy to S3
       id: deploy
       run: |
         aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
+        # Get the list of uploaded files in the bucket and exclude hidden files
         aws s3 ls s3://nisheshs/ --recursive | awk '{print "nisheshs/" $4}' > s3-files-list.txt
 
     - name: Prepare Notification Message
@@ -78,7 +79,6 @@ jobs:
     - name: Send Failure Notification
       if: failure() # Runs only if the job fails
       run: |
-        echo "Deployment failed. Sending email notification..."
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
           --message "Deployment failed. Please check the logs for details." \
