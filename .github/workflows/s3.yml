@@ -53,28 +53,27 @@ jobs:
       id: deploy
       run: |
         aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
-        aws s3 ls s3://nisheshs/ --recursive > s3-files-list.txt
+        aws s3 ls s3://nisheshs/ --recursive | awk '{print "nisheshs/" $4}' > s3-files-list.txt
 
-    - name: Prepare SNS message
-      id: prepare-sns-message
+    - name: Prepare Notification Message
+      id: prepare-notification-message
       run: |
         if [ $? -eq 0 ]; then
           # Deployment succeeded
-          UPDATED_FILES=$(cat files-to-upload.txt)
-          UPLOADED_FILES=$(aws s3 ls s3://nisheshs/ --recursive --human-readable)
-          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3://nisheshs/:\n$UPLOADED_FILES"
+          UPLOADED_FILES=$(cat s3-files-list.txt)
+          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3 bucket:\n$UPLOADED_FILES"
         else
           # Deployment failed
           MESSAGE="Deployment failed. Please check the logs for details."
         fi
-        echo -e "$MESSAGE" > sns-message.txt
+        echo -e "$MESSAGE" > message.txt
 
     - name: Notify SNS
       if: always() # Ensures this step runs regardless of the previous step's outcome
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
-          --message file://sns-message.txt
+          --message file://message.txt
 
     - name: Send Failure Notification
       if: failure() # Runs only if the job fails
