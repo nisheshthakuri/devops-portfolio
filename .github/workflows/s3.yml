@@ -71,10 +71,21 @@ jobs:
         echo -e "$MESSAGE" > sns-message.txt
 
     - name: Notify SNS
+      if: always() # Ensures this step runs regardless of the previous step's outcome
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
           --message file://sns-message.txt
+
+    - name: Send Failure Notification
+      if: failure() # Runs only if the job fails
+      run: |
+        echo "Deployment failed. Sending email notification..."
+        aws sns publish \
+          --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
+          --message "Deployment failed. Please check the logs for details." \
+          --subject "Deployment Failure Notification"
+
 
 
 
