@@ -20,6 +20,14 @@ jobs:
     - name: s3 deploy
       run: aws s3 sync . s3://nisheshs/ --size-only
 
+    - name: Notify SNS
+      run: |
+        aws sns publish \
+          --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
+          --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshs/."
+
+
+
 
 
 
