@@ -46,38 +46,35 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: List Files to Deploy
-      run: find . -type f -not -path "./.git/*" -not -name ".*" > files-to-upload.txt
-
-    - name: Deploy to S3
-      id: deploy
+    - name: Sync Files to S3
+      id: sync
       run: |
+        # Sync files to S3 bucket
         aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
-        # Get the list of uploaded files in the bucket and exclude hidden files
-        aws s3 ls s3://nisheshs/ --recursive | awk '{print "nisheshs/" $4}' > s3-files-list.txt
 
-    - name: Prepare Notification Message
-      id: prepare-notification-message
+    - name: List Uploaded Files
+      id: list
       run: |
-        if [ $? -eq 0 ]; then
-          # Deployment succeeded
-          UPLOADED_FILES=$(cat s3-files-list.txt)
-          MESSAGE="Deployment succeeded.\n\nFiles uploaded to s3 bucket:\n$UPLOADED_FILES"
+        # List files in the S3 bucket, excluding hidden files
+        aws s3api list-objects-v2 --bucket nisheshs --query "Contents[].Key" --output text | grep -v '^\.git/' | grep -v '^\.github/' > s3-files-list.txt
+
+        # Check if files list is empty
+        if [ -s s3-files-list.txt ]; then
+          echo "Deployment succeeded.\n\nFiles uploaded to s3 bucket:\n$(cat s3-files-list.txt)" > message.txt
         else
-          # Deployment failed
-          MESSAGE="Deployment failed. Please check the logs for details."
+          echo "Deployment succeeded but no files were uploaded to the S3 bucket." > message.txt
         fi
-        echo -e "$MESSAGE" > message.txt
 
     - name: Notify SNS
-      if: always() # Ensures this step runs regardless of the previous step's outcome
+      if: always() # Always run this step regardless of previous steps' outcome
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
-          --message file://message.txt
+          --message file://message.txt \
+          --subject "Deployment Notification"
 
     - name: Send Failure Notification
-      if: failure() # Runs only if the job fails
+      if: failure() # Run this step only if the job fails
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
