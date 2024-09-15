@@ -1,31 +1,83 @@
-name: s3
+# name: s3
+# on:
+#   push:
+#     branches:
+#     -  main
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - name: Checkout
+#       uses: actions/checkout@v1
+
+#     - name: AWS
+#       uses: aws-actions/configure-aws-credentials@v1
+#       with: 
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#         aws-region: ${{ secrets.AWS_S3_REGION }}
+
+#     - name: s3 deploy
+#       run: aws s3 sync . s3://nisheshs/ --size-only
+
+#     - name: Notify SNS
+#       run: |
+#         aws sns publish \
+#           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
+#           --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshs/."
+name: S3 Deployment
+
 on:
   push:
     branches:
-    -  main
+      - main
+
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-    - name: AWS
-      uses: aws-actions/configure-aws-credentials@v1
-      with: 
+    - name: Configure AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_S3_REGION }}
+        aws-region: us-east-1
 
-    - name: s3 deploy
-      run: aws s3 sync . s3://nisheshs/ --size-only
+    - name: Sync Files to S3
+      id: sync
+      run: |
+        aws s3 sync . s3://nisheshs/ --delete --exclude ".*"
+        aws s3 ls s3://nisheshs/ --recursive | awk '{print "nisheshs/" $4}' > s3-files-list.txt
+
+    - name: Prepare Notification Message
+      id: notify
+      run: |
+        if [ $? -eq 0 ]; then
+          # Deployment succeeded
+          echo "Deployment succeeded.\n\nFiles uploaded:\n$(cat s3-files-list.txt)" > message.txt
+        else
+          # Deployment failed
+          echo "Deployment failed. Please check the logs." > message.txt
+        fi
 
     - name: Notify SNS
+      if: always() # Always run this step regardless of previous steps' outcome
       run: |
         aws sns publish \
           --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
-          --message "Deployment to S3 completed. Files have been uploaded to s3://nisheshs/."
+          --message file://message.txt \
+          --subject "Deployment Notification"
 
+    - name: Send Failure Notification
+      if: failure() # Run this step only if the job fails
+      run: |
+        aws sns publish \
+          --topic-arn arn:aws:sns:us-east-1:806395723933:notificationtopic \
+          --message "Deployment failed. Please check the logs for details." \
+          --subject "Deployment Failure Notification"
 
 
     
